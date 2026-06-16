@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>炼油化验站 - 技术人员月度绩效考核</title>
+  <meta name="gh-token" content="">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+  <h1><span class="icon">🔬</span> 炼油化验站 · 绩效考核</h1>
+  <div class="navbar-actions">
+    <span id="userInfo"></span>
+    <button class="btn-nav" id="logoutBtn" style="display:none" onclick="logout()">退出</button>
+  </div>
+</nav>
+
+<!-- ============ 首页 / 角色选择 ============ -->
+<div id="homePage" class="page active">
+  <div class="login-container">
+    <div class="login-box" style="max-width:480px">
+      <div class="logo">🏭</div>
+      <h2>技术人员月度绩效考核</h2>
+      <p>炼油化验站 · 数据驱动的专业考核平台</p>
+
+      <div class="login-tabs" style="margin-top:28px">
+        <button class="login-tab active" onclick="switchTab('rate')">📝 我要评分</button>
+        <button class="login-tab" onclick="switchTab('admin')">🔐 管理员</button>
+      </div>
+
+      <!-- 评分入口：选角色 -->
+      <div id="rateForm">
+        <div class="form-group">
+          <label>选择您的角色</label>
+          <select id="rateRole">
+            <option value="">-- 请选择角色 --</option>
+            <option value="基层领导">基层领导</option>
+            <option value="技术人员">技术人员</option>
+            <option value="班组人员">班组人员</option>
+          </select>
+        </div>
+          <button class="btn btn-primary btn-lg" onclick="enterScoring()">进入评分</button>
+        <div style="margin-top:20px">
+          <button class="btn" style="width:100%;border:2px solid var(--border);background:white;color:var(--text)" onclick="showRankingPage()">📊 仅查看排名</button>
+        </div>
+      </div>
+
+      <!-- 管理员登录 -->
+      <div id="adminLoginForm" style="display:none">
+        <div class="form-group">
+          <label>管理员密码</label>
+          <input type="password" id="adminPassword" placeholder="请输入管理员密码" onkeydown="if(event.key==='Enter')adminLogin()">
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="adminLogin()">登 录</button>
+        <div style="margin-top:20px">
+          <button class="btn" style="width:100%;border:2px solid var(--border);background:white;color:var(--text)" onclick="showRankingPage()">📊 仅查看排名</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 管理员页 ============ -->
+<div id="adminPage" class="page">
+  <div class="container">
+    <div class="stats-grid" id="adminStats">
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="statTechs">0</div><div class="stat-label">技术人员</div></div>
+      <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value" id="statScores">0</div><div class="stat-label">本月评分数</div></div>
+      <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-value" id="statRaters">0</div><div class="stat-label">评分人数</div></div>
+      <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value" id="statAvg">0</div><div class="stat-label">平均分</div></div>
+    </div>
+
+    <div class="month-selector">
+      <select id="adminMonth" onchange="loadAdminData()"></select>
+      <button class="btn btn-accent" onclick="resetMonth()">🔄 刷新本月积分</button>
+      <button class="btn btn-success" onclick="exportData()">💾 导出</button>
+      <button class="btn btn-primary" onclick="importData()">📂 导入</button>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleImport(event)">
+    </div>
+
+    <!-- 技术人员管理 -->
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="icon">👥</span> 技术人员管理</h2>
+        <button class="btn btn-primary btn-sm" onclick="showAddTechModal()">+ 添加人员</button>
+      </div>
+      <div class="table-container">
+        <table class="score-table"><thead><tr><th>序号</th><th>姓名</th><th>部门/班组</th><th>操作</th></tr></thead>
+        <tbody id="techTableBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- 评分角色统计 -->
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="icon">📝</span> 评分参与统计</h2>
+      </div>
+      <div id="roleStats" style="display:flex;gap:20px;flex-wrap:wrap"></div>
+    </div>
+
+    <!-- 排名 -->
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="icon">🏆</span> 月度排名</h2>
+        <button class="btn btn-success btn-sm" onclick="exportRanking()">📥 导出</button>
+      </div>
+      <div class="table-container">
+        <table class="ranking-table"><thead><tr><th>排名</th><th>姓名</th><th>部门</th><th>平均分</th><th>总分</th><th>评分人数</th></tr></thead>
+        <tbody id="adminRankingBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 评分页 ============ -->
+<div id="scorerPage" class="page">
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="icon">📋</span> 月度评分</h2>
+        <select id="scorerMonth" onchange="loadScorerData()"></select>
+      </div>
+      <div id="scorerInfo" style="margin-bottom:16px;font-size:15px">
+        评分人：<strong id="scorerName"></strong>
+        <span id="scorerRoleBadge" class="role-badge"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2><span class="icon">👤</span> 选择评分对象</h2></div>
+      <div class="tech-selector" id="techSelector"></div>
+    </div>
+
+    <div class="card" id="scoreForm" style="display:none">
+      <div class="card-header">
+        <h2><span class="icon">✏️</span> 对 <span id="scoringTechName"></span> 进行评分</h2>
+        <span class="role-badge role-tech">每项 0-10 分</span>
+      </div>
+      <div class="table-container">
+        <table class="score-table"><thead><tr><th>序号</th><th>评分维度</th><th>分数 (0-10)</th></tr></thead>
+        <tbody id="scoreInputBody"></tbody></table>
+      </div>
+      <div style="margin-top:20px;text-align:center">
+        <button class="btn btn-success btn-lg" onclick="submitScores()">✅ 提交评分</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 排名页 ============ -->
+<div id="rankingPage" class="page">
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="icon">🏆</span> 月度积分排名</h2>
+        <div style="display:flex;gap:12px;align-items:center">
+          <select id="rankingMonth" onchange="loadRanking()"></select>
+          <button class="btn btn-nav" onclick="goBack()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:13px">← 返回</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="ranking-table"><thead><tr><th>排名</th><th>姓名</th><th>部门</th><th>平均分</th><th>总分</th><th>评分进度</th></tr></thead>
+        <tbody id="rankingBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 弹窗 ============ -->
+<div class="modal-overlay" id="addTechModal">
+  <div class="modal">
+    <h3>➕ 添加技术人员</h3>
+    <div class="form-group"><label>姓名</label><input type="text" id="newTechName" placeholder="请输入姓名"></div>
+    <div class="form-group"><label>部门/班组</label><input type="text" id="newTechDept" placeholder="如：化验一班"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addTechModal')">取消</button>
+      <button class="btn btn-primary" onclick="addTechnician()">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>⚠️ 确认刷新积分</h3>
+    <p style="margin:16px 0;color:var(--text)">确定要刷新 <span id="resetMonthLabel"></span> 月的所有积分数据吗？</p>
+    <p style="color:var(--danger);font-size:14px">此操作不可撤销，所有评分数据将被清空！</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('resetModal')">取消</button>
+      <button class="btn btn-danger" onclick="confirmReset()">确认刷新</button>
+    </div>
+  </div>
+</div>
+
+<div class="glow-orb"></div>
+<div class="toasts" id="toastContainer"></div>
+<div class="sync" id="syncStatus"></div>
+<script src="js/app.js"></script>
+</body>
+</html>
