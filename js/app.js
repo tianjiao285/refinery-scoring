@@ -117,7 +117,10 @@ async function submitScore(techId, role, scores, month) {
 
 async function resetMonth(month) {
   let data = _data || await loadData();
+  let before = data.scores.length;
   data.scores = data.scores.filter(s => s.month !== month);
+  let after = data.scores.length;
+  console.log('resetMonth: ' + month + ' before=' + before + ' after=' + after);
   await _writeData(data);
 }
 
@@ -370,12 +373,22 @@ function resetMonth() {
 
 async function confirmReset() {
   let m = document.getElementById('adminMonth').value;
+  let btn = document.querySelector('#resetModal .btn-danger');
+  if (btn) { btn.disabled = true; btn.textContent = '刷新中...'; }
   showSync('刷新中...', 'syncing');
-  await resetMonth(m);
-  closeModal('resetModal');
-  showToast(fmtMonth(m) + ' 积分已刷新');
-  showSync('已同步', 'ok');
-  loadAdminData(); loadMonths();
+  try {
+    await resetMonth(m);
+    closeModal('resetModal');
+    showToast(fmtMonth(m) + ' 积分已刷新');
+    showSync('已同步', 'ok');
+    loadAdminData(); loadMonths();
+  } catch(e) {
+    console.error('reset error:', e);
+    showToast('刷新失败：' + e.message, 'error');
+    showSync('同步失败', 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '确认刷新'; }
+  }
 }
 
 function exportRanking() {
