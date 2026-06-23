@@ -75,7 +75,7 @@
 
     <div class="month-selector">
       <select id="adminMonth" onchange="loadAdminData()"></select>
-      <button class="btn btn-accent" onclick="resetMonth()">🔄 刷新本月积分</button>
+      <button class="btn btn-accent" onclick="showResetModal()">🔄 刷新本月积分</button>
       <button class="btn btn-success" onclick="exportData()">💾 导出</button>
       <button class="btn btn-primary" onclick="importData()">📂 导入</button>
       <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleImport(event)">
