@@ -365,7 +365,7 @@ async function deleteTech(id, name) {
   loadTechnicians(); loadStats();
 }
 
-function resetMonth() {
+function showResetModal() {
   let m = document.getElementById('adminMonth').value;
   document.getElementById('resetMonthLabel').textContent = fmtMonth(m);
   showModal('resetModal');
